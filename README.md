@@ -1,10 +1,10 @@
-# Lari Sehat Bogor
+# Lari Sehat Bogor & Jakarta
 
 **Live:** https://adamkhaira-porto.github.io/Running-Air-Quality-Index/
 
-Peta interaktif kelayakan lari per jam untuk 503 desa/kelurahan di Kota dan Kabupaten Bogor, berbasis kualitas udara (PM2.5) dan suhu terasa.
+Peta interaktif kelayakan lari per jam untuk 764 wilayah: 503 desa/kelurahan di Kota dan Kabupaten Bogor serta 261 kelurahan daratan DKI Jakarta (tanpa Kepulauan Seribu), berbasis kualitas udara (PM2.5) dan suhu terasa.
 
-*Hourly running-suitability map for the 503 villages of Bogor City and Regency, combining modelled PM2.5 (CAMS, calibrated against OpenAQ sensors) with elevation-adjusted apparent temperature.*
+*Hourly running-suitability map for 764 villages of Bogor and Jakarta, combining modelled PM2.5 (CAMS, calibrated against OpenAQ sensors) with elevation-adjusted apparent temperature.*
 
 ## Apa yang diperbarui otomatis
 
@@ -12,7 +12,7 @@ Peta interaktif kelayakan lari per jam untuk 503 desa/kelurahan di Kota dan Kabu
 |---|---|---|---|
 | Prakiraan PM2.5 (12 titik grid CAMS) dan model suhu terasa per jam (30 desa, regresi terhadap ketinggian) | Open-Meteo | tiap jam (GitHub Actions) | `site/data/forecast.json` |
 | Nilai terakhir sensor PM2.5 | OpenAQ API v3 | tiap jam (GitHub Actions) | `site/data/openaq_latest.json` |
-| Faktor kalibrasi CAMS → sensor per jam | OpenAQ + Open-Meteo | tiap Senin 02.41 WIB | `site/data/calibration.json` |
+| Faktor kalibrasi CAMS → sensor per jam, per baris sel grid (−6,0° Jakarta; −6,4° Depok/Bogor) | OpenAQ + Open-Meteo | tiap Senin 02.41 WIB | `site/data/calibration.json` |
 | Pola rata-rata per jam, klaster, hot spot | CAMS 22 Agu–22 Nov 2026 | statis (jalankan ulang `analysis/`) | tertanam di `site/index.html` |
 
 ## Struktur
@@ -24,7 +24,8 @@ site/                     halaman yang di-deploy ke GitHub Pages
 scripts/
   fetch_forecast.py       prakiraan PM2.5 + suhu terasa (tiap jam)
   fetch_openaq_latest.py  nilai sensor terbaru (tiap jam)
-  update_calibration.py   hitung ulang faktor kalibrasi (mingguan)
+  update_calibration.py   hitung ulang faktor kalibrasi per sel grid (mingguan)
+  prepare_jakarta.py      sekali jalan: ketinggian + sampel suhu terasa Jakarta
 analysis/                 analisis spasial dan build halaman
   analysis.py             interpolasi, kelas lari, Moran's I, LISA, Gi*, k-means
   build_web2.py           menyusun site/index.html dari web/template_v2.html
@@ -50,14 +51,15 @@ python build_web2.py        # menulis ../site/index.html
 
 ## Metode singkat
 
-- **PM2.5:** CAMS global 0,4° (Open-Meteo), 12 titik grid diinterpolasi bilinear ke titik representatif desa, lalu dikalikan faktor kalibrasi per jam = rata-rata sensor OpenAQ / rata-rata CAMS pada sensor di baris grid yang sama dengan Bogor.
-- **Suhu terasa:** regresi per jam terhadap ketinggian (Copernicus DEM GLO-90).
+- **PM2.5:** CAMS global 0,4° (Open-Meteo) di 12 titik grid. Tiap titik grid dikalikan faktor kalibrasi per jam (rata-rata sensor OpenAQ ÷ rata-rata CAMS) dari sensor di dalam sel gridnya: baris −6,0° memakai sensor Jakarta, −6,4° sensor Depok, −6,8° meminjam −6,4°. Lalu diinterpolasi bilinear ke titik representatif desa/kelurahan.
+- **Suhu terasa:** regresi per jam terhadap ketinggian (Copernicus DEM GLO-90), plus koreksi per jam untuk Jakarta dari 30 kelurahan sampel (kota pesisir: sekitar +1,8 °C subuh, −1,3 °C siang).
 - **Kelas lari:** Layak (PM2.5 ≤ 55,4 µg/m³ dan suhu terasa < 32,2 °C), Hindari (PM2.5 > 150,4 atau suhu terasa ≥ 39,4 °C), selain itu Hati-hati. Ambang dari kategori PM2.5 BMKG/ISPU dan heat index NWS.
 - **Spasial:** Moran's I, LISA (FDR), Getis-Ord Gi*, k-means (k dipilih dengan silhouette).
 
 ## Keterbatasan
 
-- Tidak ada sensor OpenAQ aktif di wilayah Bogor pada periode analisis; kalibrasi memakai sensor murah di Depok. Sensor optik cenderung membaca terlalu tinggi saat lembap.
+- Tidak ada sensor OpenAQ aktif di wilayah Bogor pada periode analisis; kalibrasi memakai sensor murah di Depok (Bogor) dan Jakarta. Sensor optik cenderung membaca terlalu tinggi saat lembap.
+- Versi Jakarta belum memakai jaringan SPKU milik DKI (tidak ada API publik); rencana tahap berikutnya.
 - Resolusi CAMS ±45 km; sumber lokal tidak terlihat.
 - Bukan nasihat medis.
 

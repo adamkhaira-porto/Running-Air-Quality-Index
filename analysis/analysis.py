@@ -20,12 +20,22 @@ from sklearn.metrics import silhouette_score
 
 np.random.seed(42)
 cams = json.load(open("raw/cams_nodes_summary.json"))
-elev = np.array(json.load(open("raw/elevation_desa.json"))["elev"], dtype=float)
 atfit = json.load(open("raw/apparent_temp_fit.json"))["fit"]
-desa = gpd.read_file("raw/desa_bogor_full.geojson")
+# Bogor (503) first, in the original order, then Jakarta (261 mainland kelurahan; Kepulauan Seribu left out)
+bgr = gpd.read_file("raw/desa_bogor_full.geojson")
 cent = pd.read_csv("processed/desa_centroid.csv")
-assert (desa.code.values == cent.code.values).all()
-desa["elev_m"] = elev
+assert (bgr.code.values == cent.code.values).all()
+bgr["lat"], bgr["lon"] = cent.lat.values, cent.lon.values
+bgr["elev_m"] = np.array(json.load(open("raw/elevation_desa.json"))["elev"], dtype=float)
+bgr["region"] = "bgr"
+jkt = gpd.read_file("raw/desa_jakarta_full.geojson")
+ej = json.load(open("raw/jakarta/elevation_jakarta.json"))
+jkt["elev_m"] = jkt.code.map(ej).astype(float)
+jkt["region"] = "jkt"
+desa = gpd.GeoDataFrame(pd.concat([bgr, jkt], ignore_index=True), crs=bgr.crs)
+cent = desa[["code", "lat", "lon"]]
+elev = desa.elev_m.values
+IS_JKT = (desa.region == "jkt").values
 
 LATS = [-6.0, -6.4, -6.8]
 LONS = [106.4, 106.8, 107.2, 107.6]
@@ -59,9 +69,11 @@ def interp(A):
 # OpenAQ calibration: CAMS overstates the diurnal swing (night x1.8-2.0, midday x0.8) against the two
 # low-cost sensors nearest Bogor on the same CAMS grid row (Depok, Griya Tugu Asri). Multiply by the
 # hour-of-day ratio of means (processed/openaq_calibration.json, built from raw/openaq/).
-CF = np.array(json.load(open("processed/openaq_calibration.json"))["cf"])
+CAL = json.load(open("processed/openaq_calibration.json"))
+# per grid row: node row -6.0 (Jakarta cells) uses Jakarta sensors, -6.4 Depok sensors, -6.8 borrows -6.4
+CFN = np.array([CAL["rows"][CAL["row_of_node_lat"][f"{n[0]:.1f}"]]["cf"] for n in nodes])   # (12, 24)
 pm_raw = interp(HOD_PM)
-pm = pm_raw * CF[None, :]  # (503, 24) calibrated mean PM2.5 by hour of day, ug/m3
+pm = interp(HOD_PM * CFN)  # (764, 24) calibrated mean PM2.5 by hour of day, ug/m3
 o3 = interp(HOD_O3)
 no2 = interp(HOD_NO2)
 okp = interp(HOD_OK)      # % of hours with PM2.5 <= 55.4 (ISPU 'sedang' or better)
@@ -69,7 +81,13 @@ daily = interp(DAILY)
 fc = interp(FC)
 
 a = np.array([f[1] for f in atfit]); b = np.array([f[2] for f in atfit])
-at = a[None, :] + b[None, :] * (elev[:, None] / 1000.0)   # apparent temp by hour
+# Jakarta offset per hour: mean residual of the Bogor elevation model at 30 Jakarta sample points
+# (coastal city: about +1.8 C before dawn, -1.3 C at noon); Bogor keeps the original model.
+_s = json.load(open("raw/jakarta/at_sample_hod.json"))
+_ej = json.load(open("raw/jakarta/elevation_jakarta.json"))
+_J = [x for x in _s if x["region"] == "jkt"]
+c_jkt = np.array([np.mean([x["hod"][h] - (a[h] + b[h] * _ej[x["id"]] / 1000) for x in _J]) for h in range(24)])
+at = a[None, :] + b[None, :] * (elev[:, None] / 1000.0) + c_jkt[None, :] * IS_JKT[:, None]
 
 # --- categories ---
 def pm_cat(x):  # BMKG / ISPU PM2.5 bands
@@ -152,18 +170,16 @@ for k in range(3, 7):   # 3-6 clusters keeps the typology readable
 k_best = max(sil, key=sil.get)
 km = KMeans(n_clusters=k_best, n_init=20, random_state=42).fit(X)
 desa["klaster"] = km.labels_
-# stable cluster ids for the web page: 0 highland, 2 morning-spike east, 3 northern lowland, 1 the rest
-_p = desa.groupby("klaster")[["elev_m", "pm_pagi_05_07", "pm_mean"]].mean()
-_hi = _p.elev_m.idxmax(); _rest = _p.drop(_hi)
-_ms = (_rest.pm_pagi_05_07 - _rest.pm_mean).idxmax(); _rest = _rest.drop(_ms)
-_lo = _rest.pm_mean.idxmax(); _mid = _rest.drop(_lo).index[0]
-desa["klaster"] = desa.klaster.map({_hi: 0, _mid: 1, _ms: 2, _lo: 3})
+# stable ids: clusters ordered from coolest/cleanest (0) to hottest/most polluted, by mean n_jam_layak
+_p = desa.groupby("klaster").n_jam_layak.mean().sort_values(ascending=False)
+desa["klaster"] = desa.klaster.map({c: i for i, c in enumerate(_p.index)})
 prof = desa.groupby("klaster")[feat_cols + ["elev_m", "n_jam_layak", "pm_mean"]].mean().round(1)
+prof["n_jkt"] = desa.groupby("klaster").region.apply(lambda r: int((r == "jkt").sum()))
 prof["n_desa"] = desa.groupby("klaster").size()
 prof["luas_km2"] = desa.groupby("klaster").luas_km2.sum().round(0)
 
 # --- save ---
-cols = ["code", "name", "kecamatan", "wilayah", "jenis", "luas_km2", "elev_m", "pm_mean", "pm_pagi_05_07",
+cols = ["code", "name", "region", "kecamatan", "wilayah", "jenis", "luas_km2", "elev_m", "pm_mean", "pm_pagi_05_07",
         "pm_siang_13_16", "pm_sore_17_19", "rasio_pagi_vs_siang", "o3_puncak", "no2_mean", "at_06", "at_16",
         "jam_terbaik", "pm_jam_terbaik", "n_jam_layak", "n_jam_hati", "lisa", "gi_z", "klaster"]
 desa[cols].round(3).to_csv("processed/desa_metrics.csv", index=False)
@@ -187,6 +203,15 @@ summary = {
     "best_hour_counts": pd.Series(best_h).value_counts().sort_index().to_dict(),
     "n_jam_layak_dist": pd.Series(n_layak).describe().round(2).to_dict(),
     "desa_zero_layak": int(sum(np.array(n_layak) == 0)),
+    "by_region": {r: {"n": int((desa.region == r).sum()),
+                      "pm_hod": [round(float(v), 1) for v in pm[(desa.region == r).values].mean(0)],
+                      "pm_hod_raw": [round(float(v), 1) for v in pm_raw[(desa.region == r).values].mean(0)],
+                      "at_hod": [round(float(v), 1) for v in at[(desa.region == r).values].mean(0)],
+                      "zero_layak": int(((desa.region == r) & (desa.n_jam_layak == 0)).sum()),
+                      "layak_mean": round(float(desa.n_jam_layak[desa.region == r].mean()), 2),
+                      "best_hour_counts": desa.jam_terbaik[desa.region == r].value_counts().sort_index().to_dict()}
+                  for r in ("bgr", "jkt")},
+    "c_jkt": [round(float(v), 2) for v in c_jkt],
 }
 json.dump(summary, open("processed/analysis_summary.json", "w"), indent=1, default=int)
 
@@ -194,8 +219,10 @@ payload = {
     "nodes": [[n[0], n[1]] for n in nodes],
     "hod_pm": HOD_PM.round(0).tolist(), "hod_o3": HOD_O3.round(0).tolist(), "hod_ok": HOD_OK.round(0).tolist(),
     "daily": np.nan_to_num(DAILY, nan=-1).round(0).tolist(), "fc": np.nan_to_num(FC, nan=-1).round(0).tolist(),
-    "t0": cams["t0"], "now": cams["now"], "at_a": a.tolist(), "at_b": b.tolist(),
-    "desa": [{"c": r.code, "n": r["name"], "k": r.kecamatan, "w": "Kota" if r.wilayah == "Kota Bogor" else "Kab",
+    "t0": cams["t0"], "now": cams["now"], "at_a": a.tolist(), "at_b": b.tolist(), "at_c": [round(float(v), 3) for v in c_jkt],
+    "cfn_rows": [CAL["row_of_node_lat"][f"{n[0]:.1f}"] for n in nodes],
+    "desa": [{"c": r.code, "n": r["name"], "k": r.kecamatan, "r": r.region, "w": r.wilayah,
+              "la": round(float(r.lat), 4), "lo": round(float(r.lon), 4),
               "e": int(r.elev_m), "wi": W_IDX[i].tolist(), "wv": [round(v, 3) for v in W_VAL[i]],
               "cl": int(r.klaster), "li": r.lisa, "gz": round(float(r.gi_z), 2), "bh": int(r.jam_terbaik),
               "nl": int(r.n_jam_layak), "pm": round(float(r.pm_mean), 1)}
