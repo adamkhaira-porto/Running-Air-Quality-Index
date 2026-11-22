@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lari Sehat Bogor — Peta Kualitas Udara per Jam</title>
+<style>__LEAFLETCSS__</style>
+<style>
+:root{--ink:#1c1c1e;--muted:#6e6e73;--line:#ececf0;--soft:#f5f5f7;--accent:#5b5bd6;--accent2:#ecebff;--run2:#1a9850;--run1:#f0a030;--run0:#d73027}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#f2f2f4}
+.app{display:grid;grid-template-columns:380px 1fr;height:100%}
+aside{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.top{padding:14px 16px 10px}
+.brand{display:flex;align-items:center;gap:8px}
+.brand h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em}
+.pill{font-size:11px;font-weight:600;border-radius:999px;padding:2px 8px;background:#fff4e5;color:#b25e00;border:1px solid #ffe0b3}
+.pill.live{background:#e9f8ef;color:#137a3a;border-color:#c7ecd4}
+.seg{display:flex;background:var(--soft);border-radius:12px;padding:3px;margin-top:12px}
+.seg button{flex:1;border:0;background:none;font:inherit;font-weight:600;font-size:13px;padding:7px 0;border-radius:9px;color:var(--muted);cursor:pointer}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.search{margin-top:10px;width:100%;border:1px solid var(--line);background:var(--soft);border-radius:12px;padding:9px 12px;font:inherit}
+.scroll{overflow:auto;padding:4px 16px 18px;flex:1}
+.pane{display:none}.pane.on{display:block}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 8px}
+.tile{border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 8px;text-align:left;cursor:pointer;font:inherit}
+.tile b{display:block;font-size:13px}.tile span{font-size:11px;color:var(--muted)}
+.tile.on{border-color:var(--accent);background:var(--accent2)}
+.tile .ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;margin-bottom:6px;color:#fff;font-size:13px;font-weight:700}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.card{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;background:#fff}
+.card h3{margin:0 0 6px;font-size:13.5px}
+.stat{display:flex;gap:6px;margin-top:6px}
+.stat div{flex:1;border-radius:10px;padding:7px 8px;color:#fff}
+.stat strong{display:block;font-size:18px;line-height:1.1}.stat span{font-size:11px;opacity:.95}
+.lg{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:12.5px}
+.lg i{flex:none;width:14px;height:14px;border-radius:4px;margin-top:2px}
+.lg small{color:var(--muted);display:block}
+.find{font-size:12.8px;margin:0 0 8px}
+.find b{display:block}
+.link{border:0;background:none;color:var(--accent);font:inherit;font-size:12.5px;padding:0;cursor:pointer;font-weight:600}
+.muted{color:var(--muted)}.small{font-size:12px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.kv div{background:var(--soft);border-radius:10px;padding:7px 9px}
+.kv span{display:block;font-size:11px;color:var(--muted)}.kv strong{font-size:15px}
+.badge{display:inline-block;border-radius:999px;padding:1px 8px;font-size:11.5px;font-weight:600;color:#fff}
+ol.src{padding-left:18px;font-size:12px}ol.src li{margin-bottom:4px}
+a{color:var(--accent)}
+.foot{font-size:10.5px;color:var(--muted);padding:8px 16px;border-top:1px solid var(--line)}
+main{position:relative;min-height:0}
+#map{position:absolute;inset:0;background:#e9e9ec}
+.ctl{position:absolute;right:12px;top:12px;z-index:500;display:flex;flex-direction:column;gap:8px}
+.ctl button{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:#fff;font:inherit;font-size:17px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.ctl .grp{display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.ctl .grp button{border-radius:0;box-shadow:none;border-bottom:0}
+.ctl .grp button:last-child{border-bottom:1px solid var(--line)}
+.timebar{position:absolute;left:12px;right:62px;bottom:14px;z-index:500;background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px 12px;display:flex;gap:12px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.timebar input{flex:1;accent-color:var(--accent)}
+.timebar .lbl{min-width:170px;font-weight:700;font-size:13px}
+.timebar .now{border:1px solid var(--accent);color:var(--accent);background:#fff;border-radius:999px;padding:4px 10px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.note{position:absolute;left:12px;top:12px;z-index:500;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 11px;font-size:12px;max-width:330px;display:none;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.kl{font-size:10.5px;font-weight:600;color:#333;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;white-space:nowrap;pointer-events:none}
+.leaflet-tooltip{font:12px/1.4 system-ui,sans-serif;border-radius:8px}
+svg.chart text{font-size:10.5px;fill:#666}
+.axis path,.axis line{stroke:#ddd}
+@media (max-width:860px){.app{grid-template-columns:1fr;grid-template-rows:56vh auto;height:auto}main{height:56vh;order:-1}aside{border-right:0}.timebar .lbl{min-width:110px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="top">
+    <div class="brand"><h1>Lari Sehat Bogor</h1><span class="pill" id="livePill">Snapshot</span></div>
+    <div class="small muted" id="dataStamp" style="margin-top:4px"></div>
+    <div class="seg" id="tabs"><button data-t="peta" class="on">Peta</button><button data-t="desa">Desa</button><button data-t="metode">Metode</button></div>
+    <input class="search" id="search" list="desaList" placeholder="Cari desa/kelurahan…"><datalist id="desaList"></datalist>
+  </div>
+  <div class="scroll">
+  <div class="pane on" id="p-peta">
+    <div class="tiles">
+      <button class="tile on" data-m="now"><div class="ic" style="background:#5b5bd6">⏱</div><b>Sekarang</b><span>+ prakiraan 4 hari</span></button>
+      <button class="tile" data-m="hour"><div class="ic" style="background:#0f766e">24</div><b>Pola per jam</b><span>rata-rata 3 bulan</span></button>
+      <button class="tile" data-m="best"><div class="ic" style="background:#e07b00">★</div><b>Jam terbaik</b><span>per desa</span></button>
+    </div>
+    <div class="chips"><button class="chip" data-m="pm">PM2.5 saja</button><button class="chip" data-m="cluster">Klaster</button><button class="chip" data-m="lisa">Hot spot</button></div>
+    <div class="chips"><button class="chip on" id="calChip" title="Koreksi CAMS per jam berdasarkan sensor OpenAQ">✓ Kalibrasi OpenAQ</button><button class="chip on" id="oaqChip">✓ Sensor OpenAQ</button></div>
+    <div class="card" id="sumCard"><h3 id="sumTitle"></h3><div class="stat" id="sumStat"></div><div class="small muted" id="sumNote" style="margin-top:6px"></div></div>
+    <div class="card"><h3 id="lgTitle">Arti warna</h3><div id="legend"></div></div>
+    <div class="card"><h3>Temuan</h3>
+      <p class="find"><b>Model satelit melebih-lebihkan polusi subuh.</b>CAMS memberi PM2.5 rata-rata se-Bogor __RAW06__ µg/m³ pukul 06.00 dan __RAW12__ pukul 12.00. Dua sensor OpenAQ di Depok, tepat di utara Bogor, mencatat pola yang jauh lebih rata: __OBS06__ vs __OBS12__ µg/m³. Setelah dikoreksi, PM2.5 se-Bogor hanya bergerak di __CALMIN__–__CALMAX__ µg/m³ sepanjang hari. <button class="link" id="goCal">Lihat bukti kalibrasi →</button></p>
+      <p class="find"><b>Karena polusinya rata, panas yang menentukan.</b>PM2.5 hampir selalu dekat batas "sedang" 55,4 µg/m³, sementara suhu terasa berayun dari __AT05__ °C (05.00) ke __AT12__ °C (12.00). Jam terbaik jatuh ke 05.00 untuk __B05__ desa dan 18.00–20.00 untuk __B1820__ desa. Di Kota Bogor, __KOTA05__ dari 68 kelurahan paling baik pukul 05.00. <button class="link" data-go="best">Lihat jam terbaik →</button></p>
+      <p class="find"><b>Kenapa malam tetap sedikit lebih kotor?</b>Studi stasiun di 7 kota Indonesia menemukan PM2.5 Jakarta memuncak malam hingga pagi, berlawanan arah dengan ketinggian lapisan batas atmosfer (Cholianawati dkk., 2024). Sensor Depok mengonfirmasi arahnya (malam __OBS23__ vs sore __OBS15__ µg/m³), tapi selisihnya jauh lebih kecil daripada di model.</p>
+      <p class="find"><b>Zona lari terbaik: dataran tinggi selatan.</b>__C0N__ desa (__C0A__ km²) rata-rata punya __C0L__ jam layak per hari. Dataran rendah utara hanya __C3L__ jam, dan __ZERO__ dari 503 desa (__ZEROP__%) tidak punya satu jam pun yang layak. <button class="link" data-go="cluster">Lihat klaster →</button></p>
+    </div>
+  </div>
+
+  <div class="pane" id="p-desa">
+    <div id="desaEmpty" class="muted small" style="padding-top:6px">Klik desa/kelurahan di peta atau cari namanya.</div>
+    <div id="desaBox" style="display:none">
+      <h2 id="dName" style="margin:6px 0 0;font-size:17px"></h2>
+      <div class="small muted" id="dSub"></div>
+      <div class="card" style="margin-top:10px;background:var(--accent2);border-color:#d9d7ff"><h3>Waktu lari terbaik, 24 jam ke depan</h3><div id="dNext" class="small"></div></div>
+      <div class="kv">
+        <div><span>Jam terbaik (rata-rata)</span><strong id="dBest"></strong></div>
+        <div><span>Jam "layak" per hari</span><strong id="dNl"></strong></div>
+        <div><span>PM2.5 rata-rata 24 jam</span><strong id="dPm"></strong></div>
+        <div><span>Ketinggian</span><strong id="dEl"></strong></div>
+      </div>
+      <div class="small" id="dCl"></div>
+      <h3 style="font-size:13.5px;margin:14px 0 4px">Profil 24 jam (rata-rata 3 bulan)</h3>
+      <svg class="chart" id="hodChart" width="346" height="200"></svg>
+      <div class="small muted">Garis hijau tua = PM2.5 · putus-putus ungu = ozon · oranye = suhu terasa (kanan) · pita bawah = kelas kelayakan.</div>
+      <h3 style="font-size:13.5px;margin:14px 0 4px">Prakiraan PM2.5</h3>
+      <svg class="chart" id="fcChart" width="346" height="160"></svg>
+      <div class="small muted">Pita warna = kategori ISPU PM2.5. Garis vertikal = waktu yang dipilih.</div>
+    </div>
+  </div>
+
+  <div class="pane" id="p-metode">
+    <div class="card"><h3>Mengapa penting untuk pelari</h3><p class="small" style="margin:0">Saat berlari, volume udara yang dihirup per menit naik beberapa kali lipat. Chalupa dkk. (2004) mengukur ventilasi 13,3 L/menit saat istirahat dan 41,9 L/menit saat olahraga, dengan fraksi partikel ultrahalus yang mengendap di paru ikut naik. Tinjauan Giles &amp; Koehle (2014) merangkum dampak PM, ozon, dan CO saat olahraga serta cara menguranginya, termasuk memilih waktu dan lokasi. Tainio dkk. (2016) memodelkan bahwa pada PM2.5 100 µg/m³, risiko polusi baru melampaui manfaat aktivitas fisik setelah sekitar 1,5 jam bersepeda per hari.</p></div>
+    <div class="card"><h3>Data</h3><p class="small" style="margin:0"><b>Kualitas udara:</b> CAMS Global (0,4°) lewat Open-Meteo: PM2.5, ozon, NO₂ per jam, 22 Agu–22 Nov 2026, plus prakiraan. Saat halaman bisa mengakses internet (dibuka dari file lokal/hosting sendiri), prakiraan diperbarui otomatis dari Open-Meteo. 12 titik grid diinterpolasi bilinear ke tiap desa.<br><b>Suhu terasa:</b> Open-Meteo, dimodelkan per jam terhadap ketinggian (R² 0,90–0,97, galat 0,4–0,7 °C).<br><b>Ketinggian:</b> Copernicus DEM GLO-90. <b>Batas:</b> 503 desa/kelurahan (idn-area-boundary). <b>Peta dasar:</b> © OpenStreetMap, © CARTO.</p></div>
+    <div class="card" id="calCard"><h3>Kalibrasi dengan sensor OpenAQ</h3><p class="small" style="margin:0 0 6px">Selama 22 Agu–22 Nov 2026 tidak ada sensor OpenAQ aktif di wilayah Bogor (titik "Bogor Selatan" berhenti mengirim data 2 Mar 2026). Kalibrasi memakai sensor AirGradient terdekat yang berada di baris grid CAMS yang sama dengan Bogor: <b id="cNames">Depok dan Griya Tugu Asri</b> (<span id="cDays">__CALDAYS__</span> hari-sensor<span id="cPer"></span>). Rata-rata sensor <span id="cObs">__OBSM__</span> µg/m³ vs CAMS <span id="cCams">__CAMSM__</span> µg/m³. Faktor koreksi = rasio rata-rata sensor/CAMS per jam (<span id="cMin">__CFMIN__</span>× hingga <span id="cMax">__CFMAX__</span>×), lalu dikalikan ke semua desa dan ke prakiraan. Korelasi harian sensor–CAMS r = <span id="cR">__CALR__</span>. Faktor dihitung ulang otomatis tiap Senin.</p>
+      <svg class="chart" id="calChart" width="346" height="170"></svg>
+      <div class="small muted">Rata-rata per jam di dua titik sensor: hitam = sensor OpenAQ, merah putus-putus = CAMS asli. Garis CAMS terkoreksi (hijau) berimpit dengan garis hitam, karena faktornya dihitung dari data ini. Pita hijau muda = PM2.5 ≤ 55,4.</div>
+      <p class="small" style="margin:8px 0 0"><b>Catatan:</b> sensor murah (optik) cenderung membaca terlalu tinggi saat kelembapan tinggi, terutama malam hari, dan faktor dari Depok diterapkan ke seluruh Bogor termasuk dataran tinggi. Matikan "Kalibrasi OpenAQ" di tab Peta untuk melihat angka CAMS asli.</p></div>
+    <div class="card"><h3>Metode</h3><p class="small" style="margin:0"><b>PM2.5</b> = CAMS × faktor kalibrasi OpenAQ per jam (bisa dimatikan). <b>Kelas lari</b> = kategori PM2.5 BMKG/ISPU + kelas heat index NWS (lihat "Arti warna"). <b>Jam terbaik</b> (05.00–20.00): utamakan suhu terasa &lt; 32,2 °C, lalu PM2.5 terendah. <b>Klaster</b>: k-means pada PM2.5 pagi/siang/sore, puncak ozon, suhu terasa 06.00 &amp; 16.00; k=4 (silhouette tertinggi di 3–6: __SIL__). <b>Moran's I</b> PM2.5 = __MORAN__ (p = 0,001); LISA FDR: __HH__ Tinggi-Tinggi, __LL__ Rendah-Rendah — sebagian besar efek interpolasi grid kasar.</p></div>
+    <div class="card"><h3>Keterbatasan</h3><ul class="small" style="margin:0;padding-left:18px"><li>Resolusi CAMS ±45 km: sumber lokal (jalan, pasar, pembakaran sampah) tidak terlihat.</li><li>CAMS dilaporkan melebih-lebihkan PM2.5 (+50%) dan ozon (+136%) di São Paulo. Kalibrasi di sini hanya untuk PM2.5; ozon tetap angka CAMS asli.</li><li>Klaster dan hot spot dihitung dari data terkalibrasi; tidak berubah saat kalibrasi dimatikan.</li><li>Ambang 24 jam dipakai per jam sebagai indikator.</li><li>Bukan nasihat medis.</li></ul></div>
+    <div class="card"><h3>Sumber</h3><ol class="src">
+      <li><a href="https://doi.org/10.1007/s40279-013-0108-z">Giles &amp; Koehle (2014), Sports Medicine 44(2):223–249</a></li>
+      <li><a href="https://doi.org/10.1016/j.ypmed.2016.02.002">Tainio dkk. (2016), Preventive Medicine 87:233–236</a></li>
+      <li><a href="https://doi.org/10.1289/ehp.6851">Chalupa dkk. (2004), Environ Health Perspect 112(8):879–882</a></li>
+      <li><a href="https://doi.org/10.4209/aaqr.230158">Cholianawati dkk. (2024), Aerosol and Air Quality Research 24</a></li>
+      <li><a href="https://iopscience.iop.org/article/10.1088/1755-1315/724/1/012050">Mixing level height &amp; PM Jakarta 2019, IOP Conf. Ser.: Earth Environ. Sci. 724:012050</a></li>
+      <li><a href="https://www.publish.csiro.au/es/Fulltext/ES24041">Evaluasi reanalisis CAMS di São Paulo (2024)</a></li>
+      <li><a href="https://www.bmkg.go.id/kualitas-udara/pm25">BMKG kategori PM2.5</a> · <a href="https://peraturan.bpk.go.id/Details/163466/permen-lhk-no-14-tahun-2020">Permen LHK 14/2020 (ISPU)</a></li>
+      <li><a href="https://www.weather.gov/safety/heat-index">NWS Heat Index</a> · <a href="https://www.who.int/publications/i/item/9789240034228">WHO AQG 2021</a></li>
+      <li><a href="https://openaq.org">OpenAQ</a> (sensor AirGradient; data per jam lewat API v3) · <a href="https://open-meteo.com/en/docs/air-quality-api">Open-Meteo</a> · data CAMS (Copernicus) · <a href="https://github.com/fityannugroho/idn-area-boundary">idn-area-boundary</a></li>
+    </ol></div>
+  </div>
+  </div>
+  <div class="foot">Portofolio analisis spasial · Khaira · Nov 2026 · Data: CAMS, Open-Meteo, OpenAQ · Tidak berafiliasi dengan BMKG/KLHK</div>
+</aside>
+<main>
+  <div id="map"></div>
+  <div class="note" id="tileNote">Peta dasar tidak bisa dimuat di pratinjau ini (tampilan claude.ai memblokir gambar dari luar). Buka file <b>web/index.html</b> dari folder proyek untuk melihat peta dasar dan data live.</div>
+  <div class="ctl">
+    <div class="grp"><button id="zin" title="Perbesar">+</button><button id="zout" title="Perkecil">−</button></div>
+    <button id="zfit" title="Lihat seluruh Bogor">⤢</button>
+    <button id="bm" title="Ganti peta dasar">◐</button>
+  </div>
+  <div class="timebar" id="timebar"><button class="now" id="btnNow">Sekarang</button><span class="lbl" id="tLbl"></span><input type="range" id="tSlider" min="0" max="23" value="17"><span class="small muted" id="tHint"></span></div>
+</main>
+</div>
+<script>__D3__</script>
+<script>__TOPO__</script>
+<script>__LEAFLETJS__</script>
+<script>
+const TOPO=__TOPOJSON__, P=__PAYLOAD__, KEC=__KECLINES__, REG=__REGLINES__, KL=__KECLABELS__;
+const CL=[{n:"Dataran tinggi selatan",c:"#1b7837",d:"Halimun-Salak & Puncak. Paling sejuk, PM2.5 terendah, jam layak terbanyak."},{n:"Perbukitan tengah-barat",c:"#7fbc41",d:"Transisi 250–400 m, termasuk Bogor Tengah & Selatan."},{n:"Timur: lonjakan pagi",c:"#e08214",d:"Jonggol–Cariu–Cileungsi. PM2.5 pagi paling tinggi; hindari lari subuh."},{n:"Dataran rendah utara",c:"#b2182b",d:"Cibinong–Citeureup–Parung & Bogor utara. PM2.5 dan ozon tertinggi."}];
+const RUNC=["#d73027","#f0a030","#1a9850"], RUNL=["Hindari","Hati-hati","Layak"];
+const PMB=[15.5,55.4,150.4,250.4], PMC=["#2e9d4a","#2f6fb5","#e6c229","#d7301f","#2b2b2b"], PML=["Baik","Sedang","Tidak sehat","Sangat tidak sehat","Berbahaya"], PMR=["≤ 15,5","15,6–55,4","55,5–150,4","150,5–250,4","> 250,4"];
+const DAYS=["Min","Sen","Sel","Rab","Kam","Jum","Sab"], MON=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+const fmt=(x,n=0)=>x.toFixed(n).replace(".",",");
+const pmCat=x=>x<=PMB[0]?0:x<=PMB[1]?1:x<=PMB[2]?2:x<=PMB[3]?3:4;
+const heatCat=t=>t<32.2?0:t<39.4?1:2;
+function runInfo(pm,at){const pc=pm<=55.4?0:pm<=150.4?1:2, hc=heatCat(at);const c=(pc===0&&hc===0)?2:(pc===2||hc===2)?0:1;
+ const why=[];if(pc>0)why.push("PM2.5 "+fmt(pm)+" µg/m³ > 55,4");if(hc>0)why.push("suhu terasa "+fmt(at,1)+" °C ≥ 32,2");return {c,why};}
+const D=P.desa, byCode=new Map(D.map((d,i)=>[d.c,i]));
+function mix(arr,d,h){let s=0;for(let k=0;k<4;k++)s+=d.wv[k]*arr[d.wi[k]][h];return s;}
+let CAL=true; const cfh=h=>CAL?P.cf[h]:1;
+D.forEach(d=>{d.pmR=[];d.o3H=[];d.atH=[];for(let h=0;h<24;h++){d.pmR.push(mix(P.hod_pm,d,h));d.o3H.push(mix(P.hod_o3,d,h));d.atH.push(P.at_a[h]+P.at_b[h]*d.e/1000);}});
+function recalc(){D.forEach(d=>{d.pmH=d.pmR.map((v,h)=>v*cfh(h));d.pm=d.pmH.reduce((a,b)=>a+b,0)/24;
+ const R=[];for(let h=5;h<=20;h++)R.push(h);const t1=R.filter(h=>d.atH[h]<32.2),t2=R.filter(h=>d.atH[h]<39.4);const pool=t1.length?t1:t2.length?t2:R;
+ d.bh=pool.reduce((b,h)=>d.pmH[h]<d.pmH[b]?h:b,pool[0]);d.nl=R.filter(h=>runInfo(d.pmH[h],d.atH[h]).c===2).length;});}
+recalc();
+// ---- time model ----
+let FC=P.fc, NOW=new Date(P.now+":00+07:00"), FCN=P.fc[0].filter(v=>v!=null&&v>=0).length, LIVE=false, ATF=null;
+function fcPm(d,t){let s=0;for(let k=0;k<4;k++){const v=FC[d.wi[k]][t];if(v==null||v<0)return null;s+=d.wv[k]*v;}return s*cfh(locH(t).getUTCHours());}
+const locH=t=>new Date(NOW.getTime()+t*3600e3+7*3600e3);
+function fcLabel(t){const x=locH(t);return DAYS[x.getUTCDay()]+" "+x.getUTCDate()+" "+MON[x.getUTCMonth()]+", "+String(x.getUTCHours()).padStart(2,"0")+".00";}
+const hh=h=>String(h).padStart(2,"0")+".00";
+function nowT(){return Math.floor((Date.now()-NOW.getTime())/3600e3);}
+function condAt(d,t){const pm=fcPm(d,t);const h=locH(t).getUTCHours();const at=(ATF&&ATF[d.c]&&ATF[d.c][t]!=null&&ATF[d.c][t]!==undefined)?ATF[d.c][t]:d.atH[h];return {pm,at,h};}
+// ---- state ----
+let mode="now", hour=17, ft=Math.max(0,Math.min(FCN-1,nowT())), sel=null, staleNow=nowT()<0||nowT()>=FCN;
+// ---- map ----
+const map=L.map("map",{zoomControl:false,preferCanvas:true,attributionControl:true}).setView([-6.55,106.82],10);
+const BASES=[L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:"© OpenStreetMap contributors © CARTO"}),
+ L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Tiles © Esri"}),
+ L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:"© OpenStreetMap contributors © CARTO"})];
+let bi=0, tOK=0, tErr=0; BASES.forEach(b=>{b.on("tileload",()=>tOK++);b.on("tileerror",()=>tErr++);}); BASES[0].addTo(map);
+setTimeout(()=>{if(tOK===0)document.getElementById("tileNote").style.display="block";},5000);
+const feats=topojson.feature(TOPO,TOPO.objects.data).features;
+const desaLayer=L.geoJSON(feats,{style:f=>styleOf(f),onEachFeature:(f,l)=>{if(!L.Browser.touch)l.bindTooltip(()=>tipHtml(D[byCode.get(f.properties.code)]),{sticky:true,direction:"top"});l.on("click",e=>{select(f.properties.code);showPop(f.properties.code,e.latlng);});l.on("mouseover",()=>l.setStyle({weight:2,color:"#111"}));l.on("mouseout",()=>desaLayer.resetStyle(l));}}).addTo(map);
+L.geoJSON(KEC,{style:{color:"#333",weight:.7,opacity:.45,fill:false},interactive:false}).addTo(map);
+L.geoJSON(REG,{style:{color:"#111",weight:1.8,opacity:.85,fill:false},interactive:false}).addTo(map);
+const labels=L.layerGroup(KL.map(k=>L.marker([k[2],k[3]],{interactive:false,icon:L.divIcon({className:"kl",html:k[0],iconSize:null})})));
+function lab(){if(map.getZoom()>=11)labels.addTo(map);else labels.remove();} map.on("zoomend",lab);
+function fit(){map.fitBounds(desaLayer.getBounds(),{paddingTopLeft:[10,10],paddingBottomRight:[60,70]});}
+fit();lab();
+document.getElementById("zin").onclick=()=>map.zoomIn();document.getElementById("zout").onclick=()=>map.zoomOut();document.getElementById("zfit").onclick=fit;
+document.getElementById("bm").onclick=()=>{map.removeLayer(BASES[bi]);bi=(bi+1)%BASES.length;BASES[bi].addTo(map);BASES[bi].bringToBack();};
+// ---- OpenAQ sensors ----
+const MONS=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+function wib(iso){if(!iso)return "";const x=new Date(new Date(iso).getTime()+7*3600e3);return x.getUTCDate()+" "+MONS[x.getUTCMonth()]+" "+x.getUTCFullYear()+", "+String(x.getUTCHours()).padStart(2,"0")+"."+String(x.getUTCMinutes()).padStart(2,"0")+" WIB";}
+const oaq=L.layerGroup().addTo(map);
+function drawOaq(){oaq.clearLayers();P.oaq.slice().sort((a,b)=>(a.used-b.used)||(a.act-b.act)).forEach(s=>{const act=s.act, col=s.used?"#111":act?"#5b5bd6":"#9a9aa0";
+ const m=L.circleMarker([s.la,s.lo],{radius:s.used?8:6,color:"#fff",weight:2,fillColor:col,fillOpacity:act?1:.7});
+ m.bindTooltip("<b>"+s.n+"</b> · "+s.p+(s.mon?" (monitor resmi)":" (sensor murah)")+"<br>"+(act?"PM2.5 terakhir: <b>"+fmt(s.v,1)+" µg/m³</b>, "+wib(s.t):"tidak aktif"+(s.t?", data terakhir "+wib(s.t):""))+(s.used?"<br><b>Dipakai untuk kalibrasi</b>":""),{direction:"top"});oaq.addLayer(m);});}
+drawOaq();
+document.getElementById("oaqChip").onclick=e=>{const on=map.hasLayer(oaq);if(on)map.removeLayer(oaq);else oaq.addTo(map);e.currentTarget.classList.toggle("on",!on);e.currentTarget.textContent=(on?"":"✓ ")+"Sensor OpenAQ";};
+document.getElementById("calChip").onclick=e=>{CAL=!CAL;e.currentTarget.classList.toggle("on",CAL);e.currentTarget.textContent=(CAL?"✓ ":"")+"Kalibrasi OpenAQ";recalc();render();if(sel)drawDesa(sel);};
+document.getElementById("goCal").onclick=()=>{tab("metode");document.getElementById("calCard").scrollIntoView({behavior:"smooth"});};
+function calChart(){d3.select("#calChart").selectAll("*").remove();const s=d3.select("#calChart"),W=346,H=170,m={l:32,r:8,t:8,b:22};const C=P.calib;const cal=C.cams_hod.map((v,h)=>v*P.cf[h]);
+ const x=d3.scaleLinear().domain([0,23]).range([m.l,W-m.r]),y=d3.scaleLinear().domain([0,d3.max(C.cams_hod)*1.05]).range([H-m.b,m.t]);
+ s.append("rect").attr("x",m.l).attr("width",W-m.l-m.r).attr("y",y(55.4)).attr("height",y(0)-y(55.4)).attr("fill","#e8f5ec");
+ const ln=a=>d3.line().x((v,i)=>x(i)).y(v=>y(v))(a);
+ s.append("path").attr("d",ln(C.cams_hod)).attr("fill","none").attr("stroke","#d73027").attr("stroke-width",1.6).attr("stroke-dasharray","4 3");
+ s.append("path").attr("d",ln(cal)).attr("fill","none").attr("stroke","#1a9850").attr("stroke-width",1.6);
+ s.append("path").attr("d",ln(C.obs_hod)).attr("fill","none").attr("stroke","#111").attr("stroke-width",2.2);
+ s.append("g").attr("class","axis").attr("transform","translate(0,"+(H-m.b)+")").call(d3.axisBottom(x).tickValues([0,3,6,9,12,15,18,21]).tickFormat(h=>String(h).padStart(2,"0")).tickSize(3));
+ s.append("g").attr("class","axis").attr("transform","translate("+m.l+",0)").call(d3.axisLeft(y).ticks(4).tickSize(-3));}
+calChart();
+// ---- colouring ----
+function colorOf(d){
+ if(mode==="now"){const c=condAt(d,ft);return c.pm==null?"#ccc":RUNC[runInfo(c.pm,c.at).c];}
+ if(mode==="hour")return RUNC[runInfo(d.pmH[hour],d.atH[hour]).c];
+ if(mode==="pm")return PMC[pmCat(d.pmH[hour])];
+ if(mode==="best"){const b=d.bh;return b<=9?"#4575b4":b<=14?"#fee090":b<=18?"#f46d43":"#542788";}
+ if(mode==="cluster")return CL[d.cl].c;
+ if(mode==="lisa")return d.li==="Tinggi-Tinggi"?"#b2182b":d.li==="Rendah-Rendah"?"#2166ac":"#d9d9d9";
+}
+function styleOf(f){const d=D[byCode.get(f.properties.code)];const s=f.properties.code===sel;return {fillColor:colorOf(d),fillOpacity:s?.8:.58,color:s?"#111":"#fff",weight:s?2.6:.4};}
+function tipHtml(d){let h="<b>"+d.n+"</b> · "+(d.w==="Kota"?"Kota":"Kab.")+" Bogor, Kec. "+d.k+"<br>";
+ const ri=(pm,at,lbl)=>{const r=runInfo(pm,at);return lbl+": <b style='color:"+RUNC[r.c]+"'>"+RUNL[r.c]+"</b><br>PM2.5 "+fmt(pm)+" µg/m³ · suhu terasa "+fmt(at,1)+" °C"+(r.why.length?"<br><span style='color:#777'>karena "+r.why.join(" dan ")+"</span>":"");};
+ if(mode==="now"){const c=condAt(d,ft);return h+(c.pm==null?"tidak ada data":ri(c.pm,c.at,fcLabel(ft)));}
+ if(mode==="hour")return h+ri(d.pmH[hour],d.atH[hour],"Pukul "+hh(hour)+" (rata-rata)");
+ if(mode==="pm")return h+"Pukul "+hh(hour)+": PM2.5 <b>"+fmt(d.pmH[hour])+" µg/m³</b> ("+PML[pmCat(d.pmH[hour])]+")";
+ if(mode==="best")return h+"Jam terbaik: <b>"+hh(d.bh)+"</b> · "+d.nl+" jam layak/hari";
+ if(mode==="cluster")return h+"<b>"+CL[d.cl].n+"</b>";
+ if(mode==="lisa")return h+"LISA: <b>"+d.li+"</b>";}
+// ---- legend & summary ----
+function legend(){const L_=document.getElementById("legend");const row=(c,t,s)=>"<div class='lg'><i style='background:"+c+"'></i><div><b>"+t+"</b>"+(s?"<small>"+s+"</small>":"")+"</div></div>";let h="",t="Arti warna";
+ if(mode==="now"||mode==="hour"){t="Kelayakan lari";h=row(RUNC[2],"Layak","(PM2.5 ≤ 55,4 µg/m³ dan suhu terasa < 32,2 °C)")+row(RUNC[1],"Hati-hati","(PM2.5 55,5–150,4 µg/m³ dan/atau suhu terasa 32,2–39,3 °C) — persingkat durasi, turunkan intensitas")+row(RUNC[0],"Hindari","(PM2.5 > 150,4 µg/m³ atau suhu terasa ≥ 39,4 °C)")+"<div class='small muted'>Batas PM2.5 = kategori BMKG/ISPU. Batas suhu = kelas heat index NWS (32,2 °C \"waspada ekstrem\", 39,4 °C \"bahaya\"). Anjuran resmi untuk kedua kelas tengah sama: kurangi aktivitas berat/lama, bukan berhenti total.</div>";}
+ if(mode==="pm"){t="PM2.5, kategori BMKG/ISPU";h=PMC.map((c,i)=>row(c,PML[i],"("+PMR[i]+" µg/m³)")).join("");}
+ if(mode==="best"){t="Jam terbaik untuk lari"+(CAL?"":" (CAMS asli)");h=row("#4575b4","Pagi","(05.00–09.00)")+row("#fee090","Siang","(10.00–14.00)")+row("#f46d43","Sore","(15.00–18.00)")+row("#542788","Malam","(19.00–20.00)")+"<div class='small muted'>Dipilih dari jam dengan suhu terasa &lt; 32,2 °C, lalu PM2.5 terendah.</div>";}
+ if(mode==="cluster"){t="Tipologi udara & panas";h=CL.map(c=>row(c.c,c.n,c.d)).join("");}
+ if(mode==="lisa"){t="Hot spot PM2.5 (LISA, FDR 5%)";h=row("#b2182b","Tinggi-Tinggi","(desa ber-PM2.5 tinggi dikelilingi desa tinggi)")+row("#2166ac","Rendah-Rendah","(rendah dikelilingi rendah)")+row("#d9d9d9","Tidak signifikan","");}
+ if(map.hasLayer(oaq))h+="<div class='small' style='margin-top:8px;border-top:1px solid #eee;padding-top:6px'><b>Titik sensor OpenAQ</b>"+row("#111","Dipakai untuk kalibrasi","")+row("#5b5bd6","Aktif, sensor lain","")+row("#9a9aa0","Tidak aktif (berhenti kirim data)","")+"</div>";
+ document.getElementById("lgTitle").textContent=t;L_.innerHTML=h;}
+function summary(){const card=document.getElementById("sumCard");if(!(mode==="now"||mode==="hour")){card.style.display="none";return;}card.style.display="block";
+ const n=[0,0,0];D.forEach(d=>{let r;if(mode==="now"){const c=condAt(d,ft);if(c.pm==null)return;r=runInfo(c.pm,c.at).c;}else r=runInfo(d.pmH[hour],d.atH[hour]).c;n[r]++;});
+ document.getElementById("sumTitle").textContent=mode==="now"?(ft===nowT()?"Sekarang · ":"")+fcLabel(ft):"Pukul "+hh(hour)+" (rata-rata 22 Agu–22 Nov)";
+ document.getElementById("sumStat").innerHTML=[2,1,0].map(i=>"<div style='background:"+RUNC[i]+"'><strong>"+n[i]+"</strong><span>desa "+RUNL[i].toLowerCase()+"</span></div>").join("");
+ document.getElementById("sumNote").textContent=(mode==="now"?(LIVE?"Prakiraan PM2.5 live dari Open-Meteo (CAMS).":"Prakiraan CAMS per 22 Nov 2026 12.00 WIB (snapshot)."):"Pola rata-rata harian, bukan kondisi hari ini.")+(CAL?" Dikalibrasi dengan sensor OpenAQ.":" Tanpa kalibrasi (CAMS asli).");}
+function timebar(){const tb=document.getElementById("timebar"),s=document.getElementById("tSlider");
+ if(mode==="now"){tb.style.display="flex";s.max=FCN-1;s.value=ft;document.getElementById("tLbl").textContent=fcLabel(ft);document.getElementById("tHint").textContent=ft===nowT()?"sekarang":"prakiraan";document.getElementById("btnNow").style.display="";}
+ else if(mode==="hour"||mode==="pm"){tb.style.display="flex";s.max=23;s.value=hour;document.getElementById("tLbl").textContent="Pukul "+hh(hour);document.getElementById("tHint").textContent="rata-rata 3 bulan";document.getElementById("btnNow").style.display="none";}
+ else tb.style.display="none";}
+function render(){desaLayer.setStyle(styleOf);if(typeof oaq!=="undefined"&&map.hasLayer(oaq))oaq.eachLayer(l=>l.bringToFront());legend();summary();timebar();document.querySelectorAll("[data-m]").forEach(b=>b.classList.toggle("on",b.dataset.m===mode));}
+function setMode(m,h){mode=m;if(h!=null)hour=h;render();if(sel)drawDesa(sel);}
+document.querySelectorAll(".tile,.chip").forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.m)));
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.go,b.dataset.h!=null?+b.dataset.h:null)));
+document.getElementById("tSlider").addEventListener("input",e=>{const v=+e.target.value;if(mode==="now")ft=v;else hour=v;render();if(sel)drawDesa(sel);});
+document.getElementById("btnNow").onclick=()=>{ft=Math.max(0,Math.min(FCN-1,nowT()));render();if(sel)drawDesa(sel);};
+document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",()=>tab(b.dataset.t)));
+function tab(t){document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x.dataset.t===t));document.querySelectorAll(".pane").forEach(p=>p.classList.toggle("on",p.id==="p-"+t));}
+const dl=document.getElementById("desaList");D.forEach(d=>{const o=document.createElement("option");o.value=d.n+" — "+d.k;dl.appendChild(o);});
+document.getElementById("search").addEventListener("change",e=>{const v=e.target.value;const d=D.find(x=>(x.n+" — "+x.k)===v)||D.find(x=>x.n.toLowerCase()===v.trim().toLowerCase());if(d){select(d.c);const ly=desaLayer.getLayers().find(l=>l.feature.properties.code===d.c);if(ly){map.fitBounds(ly.getBounds(),{maxZoom:13});showPop(d.c,ly.getBounds().getCenter());}}});
+function select(code){sel=code;desaLayer.setStyle(styleOf);drawDesa(code);tab("desa");}
+const pop=L.popup({maxWidth:260,autoPanPaddingTopLeft:[10,10],autoPanPaddingBottomRight:[60,80]});
+function showPop(code,ll){const d=D[byCode.get(code)];let h=tipHtml(d)+"<br>Jam terbaik: <b>"+hh(d.bh)+"</b> · "+d.nl+" jam layak/hari<br><button class='link' style='margin-top:6px' onclick='openDetail()'>Lihat detail desa →</button>";pop.setLatLng(ll).setContent(h).openOn(map);}
+function openDetail(){tab("desa");document.querySelector("aside").scrollIntoView({behavior:"smooth"});document.querySelector(".scroll").scrollTop=0;}
+// ---- desa panel ----
+function drawDesa(code){const d=D[byCode.get(code)];document.getElementById("desaEmpty").style.display="none";document.getElementById("desaBox").style.display="block";
+ document.getElementById("dName").textContent=d.n;document.getElementById("dSub").textContent=(d.w==="Kota"?"Kota Bogor":"Kabupaten Bogor")+" · Kecamatan "+d.k;
+ document.getElementById("dBest").textContent=hh(d.bh);document.getElementById("dNl").textContent=d.nl+" jam";document.getElementById("dPm").textContent=fmt(d.pm)+" µg/m³";document.getElementById("dEl").textContent=d.e+" m";
+ document.getElementById("dCl").innerHTML="<span class='badge' style='background:"+CL[d.cl].c+"'>"+CL[d.cl].n+"</span> "+CL[d.cl].d;
+ const t0=Math.max(0,Math.min(FCN-1,nowT()));let best=null;for(let t=t0;t<Math.min(FCN,t0+24);t++){const c=condAt(d,t);if(c.pm==null||c.h<5||c.h>20)continue;const r=runInfo(c.pm,c.at);const key=[-r.c,c.at>=32.2?1:0,c.pm];if(!best||key<best.key||(key[0]===best.key[0]&&key[1]===best.key[1]&&key[2]<best.key[2]))best={t,c,r,key};}
+ document.getElementById("dNext").innerHTML=best?"<b style='font-size:15px'>"+fcLabel(best.t)+"</b> <span class='badge' style='background:"+RUNC[best.r.c]+"'>"+RUNL[best.r.c]+"</span><br>PM2.5 "+fmt(best.c.pm)+" µg/m³ · suhu terasa "+fmt(best.c.at,1)+" °C"+(best.r.why.length?"<br><span class='muted'>catatan: "+best.r.why.join(" dan ")+"</span>":""):"Prakiraan tidak tersedia untuk 24 jam ke depan.";
+ hodChart(d);fcChart(d);}
+function hodChart(d){const s=d3.select("#hodChart");s.selectAll("*").remove();const W=346,H=200,m={l:32,r:32,t:10,b:24};
+ const x=d3.scaleBand().domain(d3.range(24)).range([m.l,W-m.r]).padding(.12);const y=d3.scaleLinear().domain([0,Math.max(d3.max(d.pmH),d3.max(d.o3H))*1.08]).range([H-m.b,m.t]);const y2=d3.scaleLinear().domain([15,42]).range([H-m.b,m.t]);
+ s.append("rect").attr("x",m.l).attr("width",W-m.l-m.r).attr("y",y(55.4)).attr("height",y(0)-y(55.4)).attr("fill","#e8f5ec");
+ s.selectAll("rect.b").data(d3.range(24)).join("rect").attr("x",h=>x(h)).attr("width",x.bandwidth()).attr("y",H-m.b+2).attr("height",5).attr("fill",h=>RUNC[runInfo(d.pmH[h],d.atH[h]).c]);
+ const ln=(a,yy)=>d3.line().x((v,i)=>x(i)+x.bandwidth()/2).y(v=>yy(v))(a);
+ s.append("path").attr("d",ln(d.o3H,y)).attr("fill","none").attr("stroke","#8c6bb1").attr("stroke-width",1.4).attr("stroke-dasharray","4 3");
+ s.append("path").attr("d",ln(d.pmH,y)).attr("fill","none").attr("stroke","#0f5132").attr("stroke-width",2.2);
+ s.append("path").attr("d",ln(d.atH,y2)).attr("fill","none").attr("stroke","#e07b00").attr("stroke-width",1.6);
+ const hx=mode==="now"?locH(ft).getUTCHours():hour;s.append("line").attr("x1",x(hx)+x.bandwidth()/2).attr("x2",x(hx)+x.bandwidth()/2).attr("y1",m.t).attr("y2",H-m.b).attr("stroke","#111").attr("stroke-opacity",.25);
+ s.append("g").attr("class","axis").attr("transform","translate(0,"+(H-m.b+8)+")").call(d3.axisBottom(x).tickValues([0,3,6,9,12,15,18,21]).tickFormat(h=>String(h).padStart(2,"0")).tickSize(0)).select(".domain").remove();
+ s.append("g").attr("class","axis").attr("transform","translate("+m.l+",0)").call(d3.axisLeft(y).ticks(4).tickSize(-3));
+ s.append("g").attr("class","axis").attr("transform","translate("+(W-m.r)+",0)").call(d3.axisRight(y2).ticks(4).tickFormat(v=>v+"°").tickSize(-3));}
+function fcChart(d){const s=d3.select("#fcChart");s.selectAll("*").remove();const W=346,H=160,m={l:32,r:8,t:8,b:26};
+ const vals=d3.range(FCN).map(t=>fcPm(d,t));const x=d3.scaleLinear().domain([0,FCN-1]).range([m.l,W-m.r]);const y=d3.scaleLinear().domain([0,Math.max(160,d3.max(vals)*1.08)]).range([H-m.b,m.t]);
+ [[0,15.5],[15.5,55.4],[55.4,150.4],[150.4,250.4]].forEach((b,i)=>{const y0=y(Math.min(b[1],y.domain()[1])),y1=y(b[0]);if(y1>m.t)s.append("rect").attr("x",m.l).attr("width",W-m.l-m.r).attr("y",y0).attr("height",y1-y0).attr("fill",PMC[i]).attr("opacity",.12);});
+ s.append("path").attr("d",d3.line().defined(v=>v!=null).x((v,i)=>x(i)).y(v=>y(v))(vals)).attr("fill","none").attr("stroke","#0f5132").attr("stroke-width",1.8);
+ const tv=mode==="now"?ft:Math.max(0,nowT());s.append("line").attr("x1",x(tv)).attr("x2",x(tv)).attr("y1",m.t).attr("y2",H-m.b).attr("stroke","#111").attr("stroke-opacity",.3);
+ const ticks=d3.range(FCN).filter(t=>locH(t).getUTCHours()===0);
+ s.append("g").attr("class","axis").attr("transform","translate(0,"+(H-m.b)+")").call(d3.axisBottom(x).tickValues(ticks).tickFormat(t=>fcLabel(t).split(",")[0].split(" ").slice(0,2).join(" ")).tickSize(3));
+ s.append("g").attr("class","axis").attr("transform","translate("+m.l+",0)").call(d3.axisLeft(y).ticks(4).tickSize(-3));}
+// ---- live refresh (works when the page can reach the internet, e.g. opened from the local file) ----
+async function goLive(){try{
+ const lat=P.nodes.map(n=>n[0]).join(","),lon=P.nodes.map(n=>n[1]).join(",");
+ const r=await fetch("https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=pm2_5&past_days=1&forecast_days=4&timezone=Asia%2FJakarta&domains=cams_global").then(r=>r.json());
+ const arr=Array.isArray(r)?r:[r];if(arr.length!==P.nodes.length)return;
+ FC=arr.map(x=>x.hourly.pm2_5.map(v=>v==null?-1:v));NOW=new Date(arr[0].hourly.time[0]+":00+07:00");FCN=FC[0].length;LIVE=true;
+ ft=Math.max(0,Math.min(FCN-1,nowT()));
+ document.getElementById("livePill").textContent="Live";document.getElementById("livePill").classList.add("live");
+ if(mode==="hour"&&staleNow)mode="now";render();if(sel)drawDesa(sel);
+ const F={};for(let i=0;i<D.length;i+=100){const b=D.slice(i,i+100);const q=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+b.map(d=>d.la).join(",")+"&longitude="+b.map(d=>d.lo).join(",")+"&hourly=apparent_temperature&past_days=1&forecast_days=4&timezone=Asia%2FJakarta").then(r=>r.json());(Array.isArray(q)?q:[q]).forEach((x,j)=>{F[b[j].c]=x.hourly.apparent_temperature;});}
+ ATF=F;render();if(sel)drawDesa(sel);
+}catch(e){/* offline or blocked: keep the embedded snapshot */}}
+if(staleNow){mode="hour";hour=new Date(Date.now()+7*3600e3).getUTCHours();}
+function stamp(){const a=[];if(P.oaqGen)a.push("Sensor OpenAQ: "+wib(P.oaqGen));if(P.calGen)a.push("kalibrasi: "+wib(P.calGen).replace(/, .*$/,""));document.getElementById("dataStamp").textContent=a.length?a.join(" · "):"Data sensor: snapshot 22 Nov 2026, 12.00 WIB";}
+async function loadData(){
+ try{const c=await fetch("data/calibration.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();});
+  if(c.cf&&c.cf.length===24){P.cf=c.cf;P.calib={obs_hod:c.obs_hod,cams_hod:c.cams_hod};P.calGen=c.generated_at;
+   const f2=(x,n)=>x==null?"–":fmt(x,n);const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+   set("cDays",c.n_days);set("cObs",f2(c.obs_mean,1));set("cCams",f2(c.cams_mean,1));set("cMin",f2(Math.min(...c.cf),2));set("cMax",f2(Math.max(...c.cf),2));set("cR",f2(c.daily_r,2));
+   if(c.names&&c.names.length)set("cNames",c.names.join(", "));if(c.period)set("cPer",", "+c.period.from+" s.d. "+c.period.to);
+   recalc();calChart();render();if(sel)drawDesa(sel);}}catch(e){}
+ try{const o=await fetch("data/openaq_latest.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();});
+  if(o.stations&&o.stations.length){P.oaq=o.stations;P.oaqGen=o.generated_at;drawOaq();}}catch(e){}
+ stamp();}
+render();stamp();loadData();goLive();setInterval(loadData,15*60e3);
+</script>
+</body>
+</html>
