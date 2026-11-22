@@ -1,0 +1,28 @@
+name: Prepare Jakarta inputs (one-off)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-and-deploy
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python scripts/prepare_jakarta.py
+      - name: Commit inputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add analysis/raw/jakarta
+          git diff --cached --quiet || (git commit -m "data: Jakarta elevation + apparent temperature sample" && git pull --rebase origin main && git push)
