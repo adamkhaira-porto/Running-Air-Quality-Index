@@ -1,5 +1,7 @@
 # Lari Sehat Bogor
 
+**Live:** https://adamkhaira-porto.github.io/Running-Air-Quality-Index/
+
 Peta interaktif kelayakan lari per jam untuk 503 desa/kelurahan di Kota dan Kabupaten Bogor, berbasis kualitas udara (PM2.5) dan suhu terasa.
 
 *Hourly running-suitability map for the 503 villages of Bogor City and Regency, combining modelled PM2.5 (CAMS, calibrated against OpenAQ sensors) with elevation-adjusted apparent temperature.*
