@@ -51,6 +51,7 @@ html = html.replace("__LEAFLETJS__", open("node_modules/leaflet/dist/leaflet.js"
 html = html.replace("__KECLABELS__", open("processed/kec_labels.json").read())
 cal = json.load(open("processed/openaq_calibration.json"))
 pl["cf"] = cal["cf"]
+pl["atp"] = json.load(open("processed/forecast_points.json"))["at_points"]
 pl["calib"] = {"obs_hod": cal["obs_hod"], "cams_hod": cal["cams_hod"]}
 st = pd.read_csv("raw/openaq/pm25_terbaru.csv")
 st["has"] = st.pm25_terbaru.notna() & (st.pm25_terbaru >= 0)

@@ -10,7 +10,7 @@ Peta interaktif kelayakan lari per jam untuk 503 desa/kelurahan di Kota dan Kabu
 
 | Data | Sumber | Frekuensi | Di mana |
 |---|---|---|---|
-| Prakiraan PM2.5 dan suhu terasa per desa | Open-Meteo (CAMS global, forecast) | setiap halaman dibuka | langsung dari browser |
+| Prakiraan PM2.5 (12 titik grid CAMS) dan model suhu terasa per jam (30 desa, regresi terhadap ketinggian) | Open-Meteo | tiap jam (GitHub Actions) | `site/data/forecast.json` |
 | Nilai terakhir sensor PM2.5 | OpenAQ API v3 | tiap jam (GitHub Actions) | `site/data/openaq_latest.json` |
 | Faktor kalibrasi CAMS → sensor per jam | OpenAQ + Open-Meteo | tiap Senin 02.41 WIB | `site/data/calibration.json` |
 | Pola rata-rata per jam, klaster, hot spot | CAMS 22 Agu–22 Nov 2026 | statis (jalankan ulang `analysis/`) | tertanam di `site/index.html` |
@@ -22,6 +22,7 @@ site/                     halaman yang di-deploy ke GitHub Pages
   index.html              peta (Leaflet + D3, data tertanam)
   data/                   JSON yang diperbarui workflow
 scripts/
+  fetch_forecast.py       prakiraan PM2.5 + suhu terasa (tiap jam)
   fetch_openaq_latest.py  nilai sensor terbaru (tiap jam)
   update_calibration.py   hitung ulang faktor kalibrasi (mingguan)
 analysis/                 analisis spasial dan build halaman
@@ -62,4 +63,4 @@ python build_web2.py        # menulis ../site/index.html
 
 ## Atribusi
 
-CAMS / Copernicus Atmosphere Monitoring Service · Open-Meteo · OpenAQ · Copernicus DEM · batas desa: fityannugroho/idn-area-boundary · peta dasar © OpenStreetMap contributors, © CARTO, Esri.
+CAMS / Copernicus Atmosphere Monitoring Service · Open-Meteo · OpenAQ · Copernicus DEM · batas desa: fityannugroho/idn-area-boundary · peta dasar Esri (Light Gray, Dark Gray, World Imagery) dan © OpenStreetMap contributors.

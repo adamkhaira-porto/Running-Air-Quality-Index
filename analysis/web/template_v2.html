@@ -120,7 +120,7 @@ svg.chart text{font-size:10.5px;fill:#666}
 
   <div class="pane" id="p-metode">
     <div class="card"><h3>Mengapa penting untuk pelari</h3><p class="small" style="margin:0">Saat berlari, volume udara yang dihirup per menit naik beberapa kali lipat. Chalupa dkk. (2004) mengukur ventilasi 13,3 L/menit saat istirahat dan 41,9 L/menit saat olahraga, dengan fraksi partikel ultrahalus yang mengendap di paru ikut naik. Tinjauan Giles &amp; Koehle (2014) merangkum dampak PM, ozon, dan CO saat olahraga serta cara menguranginya, termasuk memilih waktu dan lokasi. Tainio dkk. (2016) memodelkan bahwa pada PM2.5 100 µg/m³, risiko polusi baru melampaui manfaat aktivitas fisik setelah sekitar 1,5 jam bersepeda per hari.</p></div>
-    <div class="card"><h3>Data</h3><p class="small" style="margin:0"><b>Kualitas udara:</b> CAMS Global (0,4°) lewat Open-Meteo: PM2.5, ozon, NO₂ per jam, 22 Agu–22 Nov 2026, plus prakiraan. Saat halaman bisa mengakses internet (dibuka dari file lokal/hosting sendiri), prakiraan diperbarui otomatis dari Open-Meteo. 12 titik grid diinterpolasi bilinear ke tiap desa.<br><b>Suhu terasa:</b> Open-Meteo, dimodelkan per jam terhadap ketinggian (R² 0,90–0,97, galat 0,4–0,7 °C).<br><b>Ketinggian:</b> Copernicus DEM GLO-90. <b>Batas:</b> 503 desa/kelurahan (idn-area-boundary). <b>Peta dasar:</b> © OpenStreetMap, © CARTO.</p></div>
+    <div class="card"><h3>Data</h3><p class="small" style="margin:0"><b>Kualitas udara:</b> CAMS Global (0,4°) lewat Open-Meteo: PM2.5, ozon, NO₂ per jam, 22 Agu–22 Nov 2026, plus prakiraan. Versi online memperbarui prakiraan PM2.5 dan suhu terasa tiap jam lewat GitHub Actions (Open-Meteo). 12 titik grid diinterpolasi bilinear ke tiap desa.<br><b>Suhu terasa:</b> Open-Meteo, dimodelkan per jam terhadap ketinggian (R² 0,90–0,97, galat 0,4–0,7 °C).<br><b>Ketinggian:</b> Copernicus DEM GLO-90. <b>Batas:</b> 503 desa/kelurahan (idn-area-boundary). <b>Peta dasar:</b> Esri (Light Gray, Dark Gray, World Imagery) dan © OpenStreetMap contributors.</p></div>
     <div class="card" id="calCard"><h3>Kalibrasi dengan sensor OpenAQ</h3><p class="small" style="margin:0 0 6px">Selama 22 Agu–22 Nov 2026 tidak ada sensor OpenAQ aktif di wilayah Bogor (titik "Bogor Selatan" berhenti mengirim data 2 Mar 2026). Kalibrasi memakai sensor AirGradient terdekat yang berada di baris grid CAMS yang sama dengan Bogor: <b id="cNames">Depok dan Griya Tugu Asri</b> (<span id="cDays">__CALDAYS__</span> hari-sensor<span id="cPer"></span>). Rata-rata sensor <span id="cObs">__OBSM__</span> µg/m³ vs CAMS <span id="cCams">__CAMSM__</span> µg/m³. Faktor koreksi = rasio rata-rata sensor/CAMS per jam (<span id="cMin">__CFMIN__</span>× hingga <span id="cMax">__CFMAX__</span>×), lalu dikalikan ke semua desa dan ke prakiraan. Korelasi harian sensor–CAMS r = <span id="cR">__CALR__</span>. Faktor dihitung ulang otomatis tiap Senin.</p>
       <svg class="chart" id="calChart" width="346" height="170"></svg>
       <div class="small muted">Rata-rata per jam di dua titik sensor: hitam = sensor OpenAQ, merah putus-putus = CAMS asli. Garis CAMS terkoreksi (hijau) berimpit dengan garis hitam, karena faktornya dihitung dari data ini. Pita hijau muda = PM2.5 ≤ 55,4.</div>
@@ -144,11 +144,11 @@ svg.chart text{font-size:10.5px;fill:#666}
 </aside>
 <main>
   <div id="map"></div>
-  <div class="note" id="tileNote">Peta dasar tidak bisa dimuat di pratinjau ini (tampilan claude.ai memblokir gambar dari luar). Buka file <b>web/index.html</b> dari folder proyek untuk melihat peta dasar dan data live.</div>
+  <div class="note" id="tileNote">Peta dasar tidak bisa dimuat di tampilan ini. Buka versi online di <b>adamkhaira-porto.github.io/Running-Air-Quality-Index</b> untuk peta dasar dan data live.</div>
   <div class="ctl">
     <div class="grp"><button id="zin" title="Perbesar">+</button><button id="zout" title="Perkecil">−</button></div>
     <button id="zfit" title="Lihat seluruh Bogor">⤢</button>
-    <button id="bm" title="Ganti peta dasar">◐</button>
+    <button id="bm" title="Peta dasar: Terang (klik untuk ganti)">◐</button>
   </div>
   <div class="timebar" id="timebar"><button class="now" id="btnNow">Sekarang</button><span class="lbl" id="tLbl"></span><input type="range" id="tSlider" min="0" max="23" value="17"><span class="small muted" id="tHint"></span></div>
 </main>
@@ -176,21 +176,26 @@ function recalc(){D.forEach(d=>{d.pmH=d.pmR.map((v,h)=>v*cfh(h));d.pm=d.pmH.redu
  d.bh=pool.reduce((b,h)=>d.pmH[h]<d.pmH[b]?h:b,pool[0]);d.nl=R.filter(h=>runInfo(d.pmH[h],d.atH[h]).c===2).length;});}
 recalc();
 // ---- time model ----
-let FC=P.fc, NOW=new Date(P.now+":00+07:00"), FCN=P.fc[0].filter(v=>v!=null&&v>=0).length, LIVE=false, ATF=null;
+let FC=P.fc, NOW=new Date(P.now+":00+07:00"), FCN=P.fc[0].filter(v=>v!=null&&v>=0).length, LIVE=false, ATR=null;
 function fcPm(d,t){let s=0;for(let k=0;k<4;k++){const v=FC[d.wi[k]][t];if(v==null||v<0)return null;s+=d.wv[k]*v;}return s*cfh(locH(t).getUTCHours());}
 const locH=t=>new Date(NOW.getTime()+t*3600e3+7*3600e3);
 function fcLabel(t){const x=locH(t);return DAYS[x.getUTCDay()]+" "+x.getUTCDate()+" "+MON[x.getUTCMonth()]+", "+String(x.getUTCHours()).padStart(2,"0")+".00";}
 const hh=h=>String(h).padStart(2,"0")+".00";
 function nowT(){return Math.floor((Date.now()-NOW.getTime())/3600e3);}
-function condAt(d,t){const pm=fcPm(d,t);const h=locH(t).getUTCHours();const at=(ATF&&ATF[d.c]&&ATF[d.c][t]!=null&&ATF[d.c][t]!==undefined)?ATF[d.c][t]:d.atH[h];return {pm,at,h};}
+function condAt(d,t){const pm=fcPm(d,t);const h=locH(t).getUTCHours();const at=(ATR&&ATR.a[t]!=null&&ATR.b[t]!=null)?ATR.a[t]+ATR.b[t]*d.e/1000:d.atH[h];return {pm,at,h};}
 // ---- state ----
 let mode="now", hour=17, ft=Math.max(0,Math.min(FCN-1,nowT())), sel=null, staleNow=nowT()<0||nowT()>=FCN;
 // ---- map ----
 const map=L.map("map",{zoomControl:false,preferCanvas:true,attributionControl:true}).setView([-6.55,106.82],10);
-const BASES=[L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:"© OpenStreetMap contributors © CARTO"}),
- L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Tiles © Esri"}),
- L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:"© OpenStreetMap contributors © CARTO"})];
-let bi=0, tOK=0, tErr=0; BASES.forEach(b=>{b.on("tileload",()=>tOK++);b.on("tileerror",()=>tErr++);}); BASES[0].addTo(map);
+map.createPane("labels");map.getPane("labels").style.zIndex=450;map.getPane("labels").style.pointerEvents="none";
+const ESRI="https://server.arcgisonline.com/ArcGIS/rest/services/", EA="Tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors";
+const tl=(u,o)=>L.tileLayer(u,Object.assign({maxZoom:19},o||{}));
+const BASES=[
+ {n:"Terang",l:L.layerGroup([tl(ESRI+"Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:16,attribution:EA}),tl(ESRI+"Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:16,pane:"labels"})])},
+ {n:"Jalan (OSM)",l:L.layerGroup([tl("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors"})])},
+ {n:"Satelit",l:L.layerGroup([tl(ESRI+"World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:18,attribution:"Tiles © Esri — Esri, Maxar, Earthstar Geographics"}),tl(ESRI+"Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:18,pane:"labels"})])},
+ {n:"Gelap",l:L.layerGroup([tl(ESRI+"Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:16,attribution:EA}),tl(ESRI+"Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:16,pane:"labels"})])}];
+let bi=0, tOK=0, tErr=0; BASES.forEach(b=>b.l.eachLayer(x=>{x.on("tileload",()=>tOK++);x.on("tileerror",()=>tErr++);})); BASES[0].l.addTo(map);
 setTimeout(()=>{if(tOK===0)document.getElementById("tileNote").style.display="block";},5000);
 const feats=topojson.feature(TOPO,TOPO.objects.data).features;
 const desaLayer=L.geoJSON(feats,{style:f=>styleOf(f),onEachFeature:(f,l)=>{if(!L.Browser.touch)l.bindTooltip(()=>tipHtml(D[byCode.get(f.properties.code)]),{sticky:true,direction:"top"});l.on("click",e=>{select(f.properties.code);showPop(f.properties.code,e.latlng);});l.on("mouseover",()=>l.setStyle({weight:2,color:"#111"}));l.on("mouseout",()=>desaLayer.resetStyle(l));}}).addTo(map);
@@ -201,7 +206,7 @@ function lab(){if(map.getZoom()>=11)labels.addTo(map);else labels.remove();} map
 function fit(){map.fitBounds(desaLayer.getBounds(),{paddingTopLeft:[10,10],paddingBottomRight:[60,70]});}
 fit();lab();
 document.getElementById("zin").onclick=()=>map.zoomIn();document.getElementById("zout").onclick=()=>map.zoomOut();document.getElementById("zfit").onclick=fit;
-document.getElementById("bm").onclick=()=>{map.removeLayer(BASES[bi]);bi=(bi+1)%BASES.length;BASES[bi].addTo(map);BASES[bi].bringToBack();};
+document.getElementById("bm").onclick=e=>{map.removeLayer(BASES[bi].l);bi=(bi+1)%BASES.length;BASES[bi].l.addTo(map);e.currentTarget.title="Peta dasar: "+BASES[bi].n+" (klik untuk ganti)";};
 // ---- OpenAQ sensors ----
 const MONS=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 function wib(iso){if(!iso)return "";const x=new Date(new Date(iso).getTime()+7*3600e3);return x.getUTCDate()+" "+MONS[x.getUTCMonth()]+" "+x.getUTCFullYear()+", "+String(x.getUTCHours()).padStart(2,"0")+"."+String(x.getUTCMinutes()).padStart(2,"0")+" WIB";}
@@ -254,7 +259,7 @@ function summary(){const card=document.getElementById("sumCard");if(!(mode==="no
  const n=[0,0,0];D.forEach(d=>{let r;if(mode==="now"){const c=condAt(d,ft);if(c.pm==null)return;r=runInfo(c.pm,c.at).c;}else r=runInfo(d.pmH[hour],d.atH[hour]).c;n[r]++;});
  document.getElementById("sumTitle").textContent=mode==="now"?(ft===nowT()?"Sekarang · ":"")+fcLabel(ft):"Pukul "+hh(hour)+" (rata-rata 22 Agu–22 Nov)";
  document.getElementById("sumStat").innerHTML=[2,1,0].map(i=>"<div style='background:"+RUNC[i]+"'><strong>"+n[i]+"</strong><span>desa "+RUNL[i].toLowerCase()+"</span></div>").join("");
- document.getElementById("sumNote").textContent=(mode==="now"?(LIVE?"Prakiraan PM2.5 live dari Open-Meteo (CAMS).":"Prakiraan CAMS per 22 Nov 2026 12.00 WIB (snapshot)."):"Pola rata-rata harian, bukan kondisi hari ini.")+(CAL?" Dikalibrasi dengan sensor OpenAQ.":" Tanpa kalibrasi (CAMS asli).");}
+ document.getElementById("sumNote").textContent=(mode==="now"?(LIVE?"Prakiraan PM2.5 CAMS dan suhu terasa terbaru (Open-Meteo).":"Prakiraan CAMS per 22 Nov 2026 12.00 WIB (snapshot)."):"Pola rata-rata harian, bukan kondisi hari ini.")+(CAL?" Dikalibrasi dengan sensor OpenAQ.":" Tanpa kalibrasi (CAMS asli).");}
 function timebar(){const tb=document.getElementById("timebar"),s=document.getElementById("tSlider");
  if(mode==="now"){tb.style.display="flex";s.max=FCN-1;s.value=ft;document.getElementById("tLbl").textContent=fcLabel(ft);document.getElementById("tHint").textContent=ft===nowT()?"sekarang":"prakiraan";document.getElementById("btnNow").style.display="";}
  else if(mode==="hour"||mode==="pm"){tb.style.display="flex";s.max=23;s.value=hour;document.getElementById("tLbl").textContent="Pukul "+hh(hour);document.getElementById("tHint").textContent="rata-rata 3 bulan";document.getElementById("btnNow").style.display="none";}
@@ -302,19 +307,24 @@ function fcChart(d){const s=d3.select("#fcChart");s.selectAll("*").remove();cons
  s.append("g").attr("class","axis").attr("transform","translate(0,"+(H-m.b)+")").call(d3.axisBottom(x).tickValues(ticks).tickFormat(t=>fcLabel(t).split(",")[0].split(" ").slice(0,2).join(" ")).tickSize(3));
  s.append("g").attr("class","axis").attr("transform","translate("+m.l+",0)").call(d3.axisLeft(y).ticks(4).tickSize(-3));}
 // ---- live refresh (works when the page can reach the internet, e.g. opened from the local file) ----
-async function goLive(){try{
- const lat=P.nodes.map(n=>n[0]).join(","),lon=P.nodes.map(n=>n[1]).join(",");
- const r=await fetch("https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+lat+"&longitude="+lon+"&hourly=pm2_5&past_days=1&forecast_days=4&timezone=Asia%2FJakarta&domains=cams_global").then(r=>r.json());
- const arr=Array.isArray(r)?r:[r];if(arr.length!==P.nodes.length)return;
- FC=arr.map(x=>x.hourly.pm2_5.map(v=>v==null?-1:v));NOW=new Date(arr[0].hourly.time[0]+":00+07:00");FCN=FC[0].length;LIVE=true;
- ft=Math.max(0,Math.min(FCN-1,nowT()));
- document.getElementById("livePill").textContent="Live";document.getElementById("livePill").classList.add("live");
- if(mode==="hour"&&staleNow)mode="now";render();if(sel)drawDesa(sel);
- const F={};for(let i=0;i<D.length;i+=100){const b=D.slice(i,i+100);const q=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+b.map(d=>d.la).join(",")+"&longitude="+b.map(d=>d.lo).join(",")+"&hourly=apparent_temperature&past_days=1&forecast_days=4&timezone=Asia%2FJakarta").then(r=>r.json());(Array.isArray(q)?q:[q]).forEach((x,j)=>{F[b[j].c]=x.hourly.apparent_temperature;});}
- ATF=F;render();if(sel)drawDesa(sel);
-}catch(e){/* offline or blocked: keep the embedded snapshot */}}
+function applyFc(pm,time0,atr){const F=pm.map(a=>a.map(v=>v==null?-1:v));let n=F[0].length;while(n>0&&F.some(a=>a[n-1]<0))n--;if(n<2)return;
+ FC=F;NOW=new Date(time0+":00+07:00");FCN=n;LIVE=true;ATR=atr;ft=Math.max(0,Math.min(FCN-1,nowT()));
+ const pl=document.getElementById("livePill");pl.textContent="Live";pl.classList.add("live");
+ if(mode==="hour"&&staleNow)mode="now";render();if(sel)drawDesa(sel);stamp();}
+function fitAT(rows,elev){const a=[],b=[];const n=rows[0].length;for(let t=0;t<n;t++){const xs=[],ys=[];rows.forEach((r,i)=>{if(r[t]!=null){xs.push(elev[i]);ys.push(r[t]);}});
+ if(xs.length<10){a.push(null);b.push(null);continue;}const mx=d3.mean(xs),my=d3.mean(ys);let sxy=0,sxx=0;xs.forEach((x,i)=>{sxy+=(x-mx)*(ys[i]-my);sxx+=(x-mx)**2;});const bb=sxy/sxx;a.push(my-bb*mx);b.push(bb);}return {a,b};}
+async function goLive(){
+ try{const f=await fetch("data/forecast.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();});
+  if((Date.now()-new Date(f.generated_at))/3600e3<6&&f.pm&&f.pm.length===P.nodes.length){P.fcGen=f.generated_at;applyFc(f.pm,f.time0,{a:f.at_a,b:f.at_b});return;}}catch(e){}
+ try{const q="&past_days=1&forecast_days=4&timezone=Asia%2FJakarta";
+  const r=await fetch("https://air-quality-api.open-meteo.com/v1/air-quality?latitude="+P.nodes.map(n=>n[0]).join(",")+"&longitude="+P.nodes.map(n=>n[1]).join(",")+"&hourly=pm2_5&domains=cams_global"+q).then(r=>r.json());
+  const arr=Array.isArray(r)?r:[r];if(arr.length!==P.nodes.length)return;
+  let atr=null;try{const s=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+P.atp.map(p=>p[0]).join(",")+"&longitude="+P.atp.map(p=>p[1]).join(",")+"&hourly=apparent_temperature"+q).then(r=>r.json());
+   const sa=Array.isArray(s)?s:[s];if(sa.length===P.atp.length)atr=fitAT(sa.map(x=>x.hourly.apparent_temperature),P.atp.map(p=>p[2]/1000));}catch(e){}
+  P.fcGen=new Date().toISOString();applyFc(arr.map(x=>x.hourly.pm2_5),arr[0].hourly.time[0],atr);
+ }catch(e){/* offline or blocked: keep the embedded snapshot */}}
 if(staleNow){mode="hour";hour=new Date(Date.now()+7*3600e3).getUTCHours();}
-function stamp(){const a=[];if(P.oaqGen)a.push("Sensor OpenAQ: "+wib(P.oaqGen));if(P.calGen)a.push("kalibrasi: "+wib(P.calGen).replace(/, .*$/,""));document.getElementById("dataStamp").textContent=a.length?a.join(" · "):"Data sensor: snapshot 22 Nov 2026, 12.00 WIB";}
+function stamp(){const a=[];if(P.fcGen)a.push("Prakiraan: "+wib(P.fcGen));if(P.oaqGen)a.push("Sensor OpenAQ: "+wib(P.oaqGen));if(P.calGen)a.push("kalibrasi: "+wib(P.calGen).replace(/, .*$/,""));document.getElementById("dataStamp").textContent=a.length?a.join(" · "):"Data sensor: snapshot 22 Nov 2026, 12.00 WIB";}
 async function loadData(){
  try{const c=await fetch("data/calibration.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();});
   if(c.cf&&c.cf.length===24){P.cf=c.cf;P.calib={obs_hod:c.obs_hod,cams_hod:c.cams_hod};P.calGen=c.generated_at;
